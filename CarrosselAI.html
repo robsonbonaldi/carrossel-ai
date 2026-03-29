@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#140d09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CarrosselAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#140d09;--surface:#1e1410;--surface2:#261a13;
+  --border:#3a2a20;--border2:#4a3828;
+  --terra:#C1440E;--terra2:#a8390c;--terra3:#d4623a;
+  --terra-dim:rgba(193,68,14,0.12);
+  --text:#f0e8e2;--text2:#a89080;--text3:#6a5048;
+  --ok:#4a8c5c;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+.header{position:sticky;top:0;z-index:100;background:rgba(20,13,9,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.5px}
+.logo span{color:var(--terra)}
+.beta{background:var(--terra-dim);color:var(--terra3);font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:1px;border:1px solid rgba(193,68,14,.25)}
+
+.step-bar{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0}
+.step-bar::-webkit-scrollbar{display:none}
+.si{display:flex;align-items:center;gap:6px;flex-shrink:0;cursor:pointer;padding:4px 8px;border-radius:20px;transition:all .2s}
+.si.active{background:var(--terra-dim)}
+.sn{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text3);transition:all .2s;flex-shrink:0}
+.si.active .sn{background:var(--terra);border-color:var(--terra);color:#fff}
+.si.done .sn{background:var(--ok);border-color:var(--ok);color:#fff}
+.sl{font-size:12px;color:var(--text3);white-space:nowrap}
+.si.active .sl{color:var(--terra3);font-weight:500}
+.si.done .sl{color:var(--ok)}
+.sdiv{width:20px;height:1px;background:var(--border);flex-shrink:0}
+
+.page{display:none;padding:18px 16px;flex-direction:column;gap:14px;animation:fi .22s ease}
+.page.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.ct{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--terra3);margin-bottom:13px}
+
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px}
+input[type=text],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--terra)}
+textarea{resize:vertical;min-height:68px}
+select{cursor:pointer}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:12px}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 13px;border-radius:30px;border:1px solid var(--border2);font-size:12px;cursor:pointer;background:var(--surface2);color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.chip:active{transform:scale(.96)}
+.chip.sel{background:var(--terra-dim);color:var(--terra3);border-color:rgba(193,68,14,.4)}
+
+.sc{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s}
+.sc:active{transform:scale(.98)}
+.sc.sel{border-color:rgba(193,68,14,.5);background:var(--terra-dim)}
+.stag{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra3);margin-bottom:4px}
+.stitle{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4}
+.sdesc{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* PALETTES — cleaner list style */
+.palettes{display:flex;flex-direction:column;gap:6px}
+.pal{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);transition:all .15s}
+.pal:active{transform:scale(.98)}
+.pal.sel{border-color:rgba(193,68,14,.45);background:var(--terra-dim)}
+.pal-dots{display:flex;gap:4px}
+.pd{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.06)}
+.pi{flex:1}
+.pn{font-size:13px;color:var(--text);line-height:1}
+.pdesc{font-size:11px;color:var(--text3);margin-top:2px}
+.pal.sel .pn{color:var(--terra3)}
+
+input[type=color]{width:40px;height:40px;border-radius:10px;border:1px solid var(--border2);cursor:pointer;padding:2px;background:var(--surface2);flex-shrink:0}
+.cr{display:flex;gap:10px;align-items:center}
+.ch{flex:1}
+
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;background:var(--border2);border:none;padding:0;margin:8px 0 3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--terra);cursor:pointer}
+.rv{font-size:12px;color:var(--terra3)}
+
+.btn-main{width:100%;background:var(--terra);color:#fff;border:none;padding:14px 20px;border-radius:12px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:all .15s}
+.btn-main:active{transform:scale(.98);opacity:.9}
+.btn-main:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-sec{flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:12px 14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;text-align:center}
+.btn-sec:active{transform:scale(.97)}
+.br{display:flex;gap:10px}
+
+.status{font-size:13px;padding:10px 14px;border-radius:10px;background:var(--surface2);color:var(--text2);display:none;border:1px solid var(--border);line-height:1.5}
+.status.ok{color:#6dbf88;border-color:rgba(109,191,136,.2)}
+.status.err{color:#e08080;border-color:rgba(224,128,128,.2)}
+
+.pw{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.phd{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.plbl{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.rbadge{background:var(--surface2);border:1px solid var(--border);font-size:11px;color:var(--terra3);padding:3px 10px;border-radius:20px}
+
+.slide-canvas{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transition:aspect-ratio .3s}
+.slide-inner{width:100%;height:100%;padding:26px;display:flex;flex-direction:column;justify-content:center;position:relative}
+.s-tag{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+.s-title{font-family:'Syne',sans-serif;line-height:1.15;margin-bottom:12px}
+.s-body{line-height:1.75}
+.s-handle{position:absolute;bottom:14px;right:16px;font-size:10px;opacity:.4}
+
+.snav{padding:10px 16px;border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between}
+.nbtn{background:var(--surface2);border:1px solid var(--border2);color:var(--text);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.nbtn:active{background:var(--terra);border-color:var(--terra)}
+.dots-row{display:flex;gap:5px;align-items:center}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--border2);cursor:pointer;transition:all .2s}
+.dot.active{background:var(--terra);width:16px;border-radius:3px}
+
+.pbox{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px;font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none;max-height:180px;overflow-y:auto}
+.tdisplay{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--text);min-height:38px;line-height:1.5}
+
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(min-width:768px){
+  .header,.step-bar{padding-left:32px;padding-right:32px}
+  .page{padding:24px 32px;max-width:1080px;margin:0 auto}
+  .dg{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+  .dc{display:flex;flex-direction:column;gap:14px}
+  .palettes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .btn-main{width:auto;padding:13px 32px}
+}
+@media(min-width:1024px){
+  .page{padding:28px 48px}
+  .dg{grid-template-columns:400px 1fr;gap:32px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Carrossel<span>AI</span></div>
+  <div class="beta">BETA</div>
+</div>
+
+<div class="step-bar">
+  <div class="si active" id="step1" onclick="gp(0)"><div class="sn" id="sn1">1</div><div class="sl">Contexto</div></div>
+  <div class="sdiv"></div>
+  <div class="si" id="step2" onclick="gp(1)"><div class="sn" id="sn2">2</div><div class="sl">Conteúdo</div></div>
+  <div class="sdiv"></div>
+  <div class="si" id="step3" onclick="gp(2)"><div class="sn" id="sn3">3</div><div class="sl">Visual</div></div>
+  <div class="sdiv"></div>
+  <div class="si" id="step4" onclick="gp(3)"><div class="sn" id="sn4">4</div><div class="sl">Preview</div></div>
+</div>
+
+<!-- P1 -->
+<div class="page active" id="page0">
+  <div class="card">
+    <div class="ct">Sobre você</div>
+    <div class="fg">
+      <div class="r2">
+        <div><label>Profissão / área</label><input type="text" id="prof" placeholder="Ex: coach, nutricionista..."></div>
+        <div><label>Idioma</label><select id="lang"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
+      </div>
+      <div><label>Objetivo</label>
+        <div class="chips" style="margin-top:6px">
+          <div class="chip sel" data-group="obj" data-val="educar" onclick="sc(this)">Educar</div>
+          <div class="chip" data-group="obj" data-val="vender" onclick="sc(this)">Vender</div>
+          <div class="chip" data-group="obj" data-val="engajar" onclick="sc(this)">Engajar</div>
+          <div class="chip" data-group="obj" data-val="inspirar" onclick="sc(this)">Inspirar</div>
+          <div class="chip" data-group="obj" data-val="informar" onclick="sc(this)">Informar</div>
+        </div>
+      </div>
+      <div><label>Público-alvo (opcional)</label><input type="text" id="pub" placeholder="Ex: empreendedores, mães..."></div>
+      <div><label>Contexto adicional (opcional)</label><textarea id="ctx" placeholder="Ex: tenho um curso de R$197..."></textarea></div>
+    </div>
+  </div>
+  <button class="btn-main" id="btnSug" onclick="gerarSugestoes()">Sugerir temas com IA</button>
+  <div class="status" id="stSug"></div>
+  <div id="sugArea" style="display:none;flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="ct">Escolha um tema</div>
+      <div id="sugList" style="display:flex;flex-direction:column;gap:9px"></div>
+    </div>
+    <div class="card">
+      <label>Ou escreva seu próprio tema</label>
+      <input type="text" id="temaCustom" placeholder="Digite aqui..." oninput="onTC()" style="margin-top:6px">
+    </div>
+    <button class="btn-main" onclick="gp(1)">Próximo: Conteúdo →</button>
+  </div>
+</div>
+
+<!-- P2 -->
+<div class="page" id="page1">
+  <div class="card"><div class="ct">Tema</div><div class="tdisplay" id="temaD">—</div></div>
+  <div class="card">
+    <div class="ct">Formato</div>
+    <div class="fg">
+      <div><label>Tipo</label>
+        <div class="chips" style="margin-top:6px">
+          <div class="chip sel" data-group="tipo" data-val="single" onclick="sc(this)">Post único</div>
+          <div class="chip" data-group="tipo" data-val="carousel" onclick="sc(this)">Carrossel</div>
+        </div>
+      </div>
+      <div id="nsRow" style="display:none"><label>Número de slides</label>
+        <div class="chips" style="margin-top:6px">
+          <div class="chip sel" data-group="ns" data-val="3" onclick="sc(this)">3</div>
+          <div class="chip" data-group="ns" data-val="5" onclick="sc(this)">5</div>
+          <div class="chip" data-group="ns" data-val="7" onclick="sc(this)">7</div>
+          <div class="chip" data-group="ns" data-val="9" onclick="sc(this)">9</div>
+        </div>
+      </div>
+      <div><label>Proporção</label>
+        <div class="chips" style="margin-top:6px">
+          <div class="chip sel" data-group="ratio" data-val="1:1" onclick="sc(this)">1:1 Feed</div>
+          <div class="chip" data-group="ratio" data-val="4:5" onclick="sc(this)">4:5 Feed</div>
+          <div class="chip" data-group="ratio" data-val="9:16" onclick="sc(this)">9:16 Stories</div>
+          <div class="chip" data-group="ratio" data-val="16:9" onclick="sc(this)">16:9 YouTube</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Detalhes</div>
+    <div class="fg">
+      <div><label>Título (opcional)</label><input type="text" id="titulo" placeholder="A IA cria se deixar vazio..." oninput="up()"></div>
+      <div><label>Corpo / descrição</label><textarea id="corpo" placeholder="Descreva ou deixe em branco para a IA criar" oninput="up()"></textarea></div>
+      <div><label>Handle / assinatura</label><input type="text" id="handle" placeholder="@seuperfil" oninput="up()"></div>
+    </div>
+  </div>
+  <div class="br"><button class="btn-sec" onclick="gp(0)">← Voltar</button><button class="btn-sec" onclick="gp(2)">Visual →</button></div>
+</div>
+
+<!-- P3 -->
+<div class="page" id="page2">
+  <div class="card">
+    <div class="ct">Atmosfera</div>
+    <div class="chips">
+      <div class="chip sel" data-group="atm" data-val="minimalista" onclick="sc(this)">Minimalista</div>
+      <div class="chip" data-group="atm" data-val="bold" onclick="sc(this)">Bold</div>
+      <div class="chip" data-group="atm" data-val="elegante" onclick="sc(this)">Elegante</div>
+      <div class="chip" data-group="atm" data-val="moderno" onclick="sc(this)">Moderno</div>
+      <div class="chip" data-group="atm" data-val="descontraido" onclick="sc(this)">Descontraído</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Paletas</div>
+    <div class="palettes" id="palettes"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Cores personalizadas</div>
+    <div class="fg">
+      <div class="r2">
+        <div><label>Fundo</label><div class="cr"><input type="color" id="bgC" value="#FAFAF8" oninput="ocp('bgC','bgH')"><input type="text" id="bgH" value="#FAFAF8" class="ch" oninput="och('bgC','bgH')"></div></div>
+        <div><label>Título</label><div class="cr"><input type="color" id="tiC" value="#2C2018" oninput="ocp('tiC','tiH')"><input type="text" id="tiH" value="#2C2018" class="ch" oninput="och('tiC','tiH')"></div></div>
+      </div>
+      <div class="r2">
+        <div><label>Corpo</label><div class="cr"><input type="color" id="boC" value="#6B5040" oninput="ocp('boC','boH')"><input type="text" id="boH" value="#6B5040" class="ch" oninput="och('boC','boH')"></div></div>
+        <div><label>Tamanho título</label>
+          <input type="range" id="ts" min="14" max="52" value="26" step="1" oninput="document.getElementById('tsv').textContent=this.value+'px';up()">
+          <span id="tsv" class="rv">26px</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="br"><button class="btn-sec" onclick="gp(1)">← Voltar</button><button class="btn-sec" onclick="gp(3)">Preview →</button></div>
+</div>
+
+<!-- P4 -->
+<div class="page" id="page3">
+  <div class="dg">
+    <div class="dc">
+      <div class="pw">
+        <div class="phd"><span class="plbl">Preview</span><span class="rbadge" id="rb">1:1</span></div>
+        <div style="padding:12px">
+          <div class="slide-canvas" id="slideC" style="background:#FAFAF8">
+            <div class="slide-inner">
+              <div class="s-tag" id="pTag" style="color:#2C2018"></div>
+              <div class="s-title" id="pTitle" style="font-size:26px;color:#2C2018">Seu título aqui</div>
+              <div class="s-body" id="pBody" style="font-size:13px;color:#6B5040">A descrição do slide aparece aqui...</div>
+              <div class="s-handle" id="pHandle" style="color:#6B5040">@seuperfil</div>
+            </div>
+          </div>
+        </div>
+        <div class="snav" id="snav">
+          <button class="nbtn" onclick="nav(-1)">←</button>
+          <div class="dots-row" id="dotsR"></div>
+          <button class="nbtn" onclick="nav(1)">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="dc">
+      <button class="btn-main" id="btnG" onclick="gerar()">⚡ Gerar com IA</button>
+      <div class="status" id="stG"></div>
+      <div class="br">
+        <button class="btn-sec" onclick="verPrompt()">Ver prompt</button>
+        <button class="btn-sec" onclick="copiarPrompt()">Copiar prompt</button>
+      </div>
+      <div class="pbox" id="pbox"></div>
+      <div class="br"><button class="btn-sec" onclick="gp(2)">← Voltar</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PALS=[
+  {n:"Creme & cacau",    d:"Neutro, sofisticado",      c:["#FAFAF8","#2C2018","#7A5C48"]},
+  {n:"Areia & grafite",  d:"Limpo, editorial",          c:["#F5F2ED","#242020","#7A7268"]},
+  {n:"Gelo & chumbo",    d:"Frio, minimalista",         c:["#F0F4F6","#1C2B35","#4A6070"]},
+  {n:"Marfim & sálvia",  d:"Natural, calmo",            c:["#F8F6F0","#2A3028","#5C7060"]},
+  {n:"Branco & argila",  d:"Cálido, direto",            c:["#FFFFFF","#8B3A1A","#C4694A"]},
+  {n:"Creme & vinho",    d:"Elegante, feminino",        c:["#FAF5F0","#4A1828","#8A4858"]},
+  {n:"Cinza-quente",     d:"Moderno, neutro",           c:["#F2EFEA","#1A1612","#6A6258"]},
+  {n:"Leite & âmbar",   d:"Suave, aconchegante",       c:["#FDF9F4","#3D2A0A","#9A7040"]},
+  {n:"Pérola & marinho", d:"Clássico, limpo",           c:["#F8F7F5","#1A2038","#4A5278"]},
+  {n:"Névoa & carvão",   d:"Contemporâneo, sutil",      c:["#EEECEA","#242422","#686660"]},
+];
+
+let S={tipo:"single",ratio:"1:1",atm:"minimalista",ns:"3",obj:"educar",slides:[],cur:0,tema:""};
+
+function renderPals(){
+  document.getElementById("palettes").innerHTML=PALS.map((p,i)=>`
+    <div class="pal${i===0?" sel":""}" onclick="applyPal(${i})">
+      <div class="pal-dots">${p.c.map(c=>`<span class="pd" style="background:${c}"></span>`).join("")}</div>
+      <div class="pi"><div class="pn">${p.n}</div><div class="pdesc">${p.d}</div></div>
+    </div>`).join("");
+}
+renderPals();
+
+function applyPal(i){
+  document.querySelectorAll(".pal").forEach((el,j)=>el.classList.toggle("sel",j===i));
+  const p=PALS[i];
+  sCI("bgC","bgH",p.c[0]);sCI("tiC","tiH",p.c[1]);sCI("boC","boH",p.c[2]);
+  up();
+}
+function sCI(a,b,v){document.getElementById(a).value=v;document.getElementById(b).value=v;}
+function ocp(cId,hId){document.getElementById(hId).value=document.getElementById(cId).value;up();}
+function och(cId,hId){const h=document.getElementById(hId).value;if(/^#[0-9A-Fa-f]{6}$/.test(h))document.getElementById(cId).value=h;up();}
+
+function sc(el){
+  const g=el.dataset.group;
+  document.querySelectorAll(`[data-group="${g}"]`).forEach(c=>c.classList.remove("sel"));
+  el.classList.add("sel");
+  S[g]=el.dataset.val;
+  if(g==="tipo") document.getElementById("nsRow").style.display=el.dataset.val==="carousel"?"block":"none";
+  if(g==="ratio"){
+    const m={"1:1":"1/1","4:5":"4/5","9:16":"9/16","16:9":"16/9"};
+    document.getElementById("slideC").style.aspectRatio=m[el.dataset.val]||"1/1";
+    document.getElementById("rb").textContent=el.dataset.val;
+  }
+  up();
+}
+
+function gp(i){
+  document.querySelectorAll(".page").forEach((p,j)=>p.classList.toggle("active",j===i));
+  [1,2,3,4].forEach(n=>{
+    const el=document.getElementById("step"+n);
+    const sn=document.getElementById("sn"+n);
+    el.className="si"+(n===i+1?" active":n<i+1?" done":"");
+    sn.textContent=n<i+1?"✓":n;
+  });
+  if(i===1){const t=document.getElementById("temaCustom")?.value||S.tema;document.getElementById("temaD").textContent=t||"—";}
+  if(i===3) up();
+  window.scrollTo(0,0);
+}
+
+function ss(id,msg,type=""){
+  const el=document.getElementById(id);
+  el.style.display=msg?"block":"none";
+  el.textContent=msg;
+  el.className="status"+(type?" "+type:"");
+}
+
+async function gerarSugestoes(){
+  const prof=document.getElementById("prof").value.trim();
+  if(!prof){ss("stSug","Informe sua profissão primeiro.","err");return;}
+  const lang=document.getElementById("lang").value;
+  const ll={"pt":"português","en":"inglês","es":"espanhol"}[lang];
+  const pub=document.getElementById("pub").value;
+  const ctx=document.getElementById("ctx").value;
+  const btn=document.getElementById("btnSug");
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Gerando temas...';
+  ss("stSug","Aguarde...","");
+  const prompt=`Marketing de conteúdo Instagram. Profissão: ${prof}. Objetivo: ${S.obj}. Público: ${pub||"geral"}. Contexto: ${ctx||"nenhum"}. Idioma: ${ll}. Sugira 4 temas criativos. APENAS JSON: {"sugestoes":[{"tag":"CATEGORIA","title":"Título (máx 10 palavras)","desc":"Uma frase sobre o ângulo"}]}`;
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:700,messages:[{role:"user",content:prompt}]})});
+    const d=await r.json();
+    const p=JSON.parse(d.content[0].text.replace(/```json|```/g,"").trim());
+    renderSugs(p.sugestoes);
+    ss("stSug","","");
+  }catch(e){ss("stSug","Erro ao conectar. Tente novamente.","err");}
+  btn.disabled=false;btn.textContent="Sugerir temas com IA";
+}
+
+function renderSugs(list){
+  document.getElementById("sugArea").style.display="flex";
+  document.getElementById("sugList").innerHTML=list.map((s,i)=>`
+    <div class="sc" id="sg${i}" onclick="eS(${i},'${s.title.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">
+      <div class="stag">${s.tag}</div>
+      <div class="stitle">${s.title}</div>
+      <div class="sdesc">${s.desc}</div>
+    </div>`).join("");
+}
+function eS(i,t){document.querySelectorAll(".sc").forEach((c,j)=>c.classList.toggle("sel",j===i));S.tema=t;document.getElementById("temaCustom").value="";}
+function onTC(){const v=document.getElementById("temaCustom").value;if(v)document.querySelectorAll(".sc").forEach(c=>c.classList.remove("sel"));S.tema=v;}
+
+function up(){
+  const bg=document.getElementById("bgC").value;
+  const tc=document.getElementById("tiC").value;
+  const bc=document.getElementById("boC").value;
+  const ts=(document.getElementById("ts").value||26)+"px";
+  const titulo=document.getElementById("titulo").value||"Seu título aqui";
+  const corpo=document.getElementById("corpo").value||"A descrição do slide aparece aqui...";
+  const handle=document.getElementById("handle").value||"@seuperfil";
+  const c=document.getElementById("slideC");
+  if(c)c.style.background=bg;
+  const t=document.getElementById("pTitle");if(t){t.style.color=tc;t.style.fontSize=ts;t.textContent=titulo;}
+  const b=document.getElementById("pBody");if(b){b.style.color=bc;b.textContent=corpo;}
+  const h=document.getElementById("pHandle");if(h){h.style.color=bc;h.textContent=handle;}
+}
+
+function getTema(){return document.getElementById("temaCustom")?.value||S.tema||document.getElementById("titulo").value||"post geral";}
+
+function buildPrompt(){
+  const prof=document.getElementById("prof").value||"criador de conteúdo";
+  const titulo=document.getElementById("titulo").value;
+  const corpo=document.getElementById("corpo").value;
+  const handle=document.getElementById("handle").value;
+  const ll={"pt":"português","en":"inglês","es":"espanhol"}[document.getElementById("lang").value];
+  const tema=getTema();
+  const bg=document.getElementById("bgC").value;
+  const tc=document.getElementById("tiC").value;
+  const bc=document.getElementById("boC").value;
+  if(S.tipo==="single")
+    return `Post Instagram para ${prof}.\nTema: ${tema}\nIdioma: ${ll} | Proporção: ${S.ratio} | Atmosfera: ${S.atm}\nCores: fundo ${bg} | título ${tc} | corpo ${bc}\nHandle: ${handle||"@perfil"}\n${titulo?"Título sugerido: "+titulo:""}\n${corpo?"Contexto: "+corpo:""}\n\nGere título (máx 8 palavras) + corpo (2-4 frases) + sugestão visual.`;
+  return `${S.ns} slides carrossel Instagram para ${prof}.\nTema: ${tema}\nIdioma: ${ll} | Proporção: ${S.ratio} | Atmosfera: ${S.atm}\nCores: fundo ${bg} | título ${tc} | corpo ${bc}\nHandle: ${handle||"@perfil"}\n${corpo?"Contexto: "+corpo:""}\n\nCada slide: tag + título (máx 8 palavras) + corpo (2-3 frases).\nSlide 1: gancho | meio: valor | último: CTA.`;
+}
+
+async function gerar(){
+  const btn=document.getElementById("btnG");
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Gerando...';
+  ss("stG","Criando seu conteúdo...","");
+  const prompt=buildPrompt()+'\n\nAPENAS JSON. Post único: {"title":"...","body":"..."} — Carrossel: {"slides":[{"tag":"...","title":"...","body":"..."}]}';
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,messages:[{role:"user",content:prompt}]})});
+    const d=await r.json();
+    const p=JSON.parse(d.content[0].text.replace(/```json|```/g,"").trim());
+    if(p.slides){
+      S.slides=p.slides;S.cur=0;
+      document.getElementById("snav").style.display="flex";
+      renderDots();showSlide(0);
+      ss("stG",`✓ ${p.slides.length} slides gerados! Use as setas para navegar.`,"ok");
+    }else{
+      document.getElementById("titulo").value=p.title||"";
+      document.getElementById("corpo").value=p.body||"";
+      up();ss("stG","✓ Slide gerado!","ok");
+    }
+  }catch(e){ss("stG","Erro ao gerar. Verifique sua conexão.","err");}
+  btn.disabled=false;btn.textContent="⚡ Gerar com IA";
+}
+
+function renderDots(){document.getElementById("dotsR").innerHTML=S.slides.map((_,i)=>`<div class="dot${i===0?" active":""}" onclick="gS(${i})"></div>`).join("");}
+function updDots(){document.querySelectorAll(".dot").forEach((d,i)=>d.classList.toggle("active",i===S.cur));}
+function nav(dir){const n=S.slides.length;if(!n)return;S.cur=(S.cur+dir+n)%n;showSlide(S.cur);}
+function gS(i){S.cur=i;showSlide(i);}
+function showSlide(i){
+  const s=S.slides[i];if(!s)return;
+  document.getElementById("titulo").value=s.title||"";
+  document.getElementById("corpo").value=s.body||"";
+  document.getElementById("pTag").textContent=s.tag||"";
+  up();updDots();
+}
+function verPrompt(){const b=document.getElementById("pbox");b.style.display=b.style.display==="block"?"none":"block";b.textContent=buildPrompt();}
+function copiarPrompt(){
+  navigator.clipboard.writeText(buildPrompt()).then(()=>{
+    const b=document.getElementById("pbox");
+    b.style.display="block";b.textContent="✓ Prompt copiado!";
+    setTimeout(()=>{b.style.display="none";},2500);
+  });
+}
+applyPal(0);up();
+</script>
+</body>
+</html>
