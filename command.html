@@ -989,7 +989,7 @@ async function sendAI(){
   const resp=document.getElementById('aiResp');
   load.style.display='block';resp.style.display='none';input.disabled=true;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Você é STRATOS, estrategista de conteúdo da IA Acelera Você. Ajude Robson Bonaldi (CEO, corretor de imóveis de alto padrão e Ironman triathlete) a criar conteúdo persuasivo para Instagram, LinkedIn e TikTok. Seja direto, estratégico e criativo. Foco em vendas e conversão. Responda em português brasileiro.',messages:[{role:'user',content:msg}]})});
+    const res=await fetch('https://thriving-consideration-production.up.railway.app/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Você é STRATOS, estrategista de conteúdo da IA Acelera Você. Ajude Robson Bonaldi (CEO, corretor de imóveis de alto padrão e Ironman triathlete) a criar conteúdo persuasivo para Instagram, LinkedIn e TikTok. Seja direto, estratégico e criativo. Foco em vendas e conversão. Responda em português brasileiro.',messages:[{role:'user',content:msg}]})});
     const data=await res.json();
     resp.textContent=data.content&&data.content[0]?data.content[0].text:'Erro ao gerar resposta.';
     resp.style.display='block';input.value='';
@@ -1071,7 +1071,7 @@ async function gerarPost(){
   const res=document.getElementById('gRes');
   load.style.display='block';res.style.display='none';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'Você é '+agent.value+', membro do time IA Acelera Você. Crie um post persuasivo para '+plat.value+'. Inclua: HOOK (primeira linha), CORPO (valor), CTA. Robson Bonaldi é Ironman, corretor de alto padrão e especialista em IA. Responda em português.',messages:[{role:'user',content:'Crie um post sobre: '+tema.value}]})});
+    const r=await fetch('https://thriving-consideration-production.up.railway.app/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'Você é '+agent.value+', membro do time IA Acelera Você. Crie um post persuasivo para '+plat.value+'. Inclua: HOOK (primeira linha), CORPO (valor), CTA. Robson Bonaldi é Ironman, corretor de alto padrão e especialista em IA. Responda em português.',messages:[{role:'user',content:'Crie um post sobre: '+tema.value}]})});
     const data=await r.json();
     const txt=data.content&&data.content[0]?data.content[0].text:'Erro.';
     document.getElementById('gTxt').textContent=txt;
